@@ -88,10 +88,12 @@ export default class SettingPickerIOS extends Component {
 
         return (
             <View style={[styles.outerView, this.props.style]}>
-                <View style={styles.textView}>
-                    <Text style={[styles.titleText, this.props.textStyle]}>{this.props.title}</Text>
-                    <Text style={valueTextStyles}>{this.state.value}</Text>
-                </View>
+                <TouchableHighlihght onPress={this.handlePress}>
+                    <View style={styles.textView}>
+                        <Text style={[styles.titleText, this.props.textStyle]}>{this.props.title}</Text>
+                        <Text style={valueTextStyles}>{this.state.value}</Text>
+                    </View>
+                </TouchableHighlihght>
                 <View style={[styles.pickerView]}>
                     { if (this.state.expanded) { picker } }
                 </View>
