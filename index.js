@@ -15,13 +15,13 @@ export default class SettingPickerIOS extends Component {
     }
 
     componentWillMount() {
-        if (!__DEV__ && Platform.OS !== 'ios') {
+        if (Platform.OS !== 'ios') {
             throw new Error('SettingPickerIOS is only supported in iOS');
         }
     }
 
     componentDidMount() {
-        let picker = this.props.children[0],
+        let picker = this.props.children,
             val;
         switch (getChildElementType(picker)) {
             case 'PickerIOS':
@@ -66,7 +66,7 @@ export default class SettingPickerIOS extends Component {
     }
 
     render() {
-        let picker = this.props.children[0];
+        let picker = this.props.children;
         switch (getChildElementType(picker)) {
             case 'PickerIOS':
             case 'Picker':
