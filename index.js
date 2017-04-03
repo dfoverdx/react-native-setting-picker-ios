@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableHighlihght, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation } from 'react-native';
+import { View, Text, TouchableHighlihght, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation, StyleSheet } from 'react-native';
 
 export default class SettingPickerIOS extends Component {
     constructor(props) {
@@ -24,12 +24,12 @@ export default class SettingPickerIOS extends Component {
         let picker = this.props.children[0],
             val;
         switch (getChildElementType(picker)) {
-            case 'pickerIOS':
-            case 'picker':
+            case 'PickerIOS':
+            case 'Picker':
                 val = picker.selectedValue;
                 break;
 
-            case 'datePickerIOS':
+            case 'DatePickerIOS':
                 val = picker.date;
                 break;
         }
@@ -68,11 +68,11 @@ export default class SettingPickerIOS extends Component {
     render() {
         let picker = this.props.children[0];
         switch (getChildElementType(picker)) {
-            case 'pickerIOS':
-            case 'picker':
+            case 'PickerIOS':
+            case 'Picker':
                 picker.onValueChange = handleValueChange;
                 break;
-            case 'datePickerIOS':
+            case 'DatePickerIOS':
                 picker.onDateChange = handleValueChange;
                 break;
         }
@@ -153,15 +153,5 @@ const styles = {
 };
 
 function getChildElementType(picker) {
-    if (picker instanceOf PickerIOS) {
-        return 'pickerIOS';
-    }
-
-    if (picker instanceOf Picker) {
-        return 'picker';
-    }
-
-    if (picker instanceOf DatePickerIOS) {
-        return 'datePickerIOS';
-    }
+    return picker.type.name;
 }
