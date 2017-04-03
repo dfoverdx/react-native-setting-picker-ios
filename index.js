@@ -95,7 +95,7 @@ export default class SettingPickerIOS extends Component {
                     </View>
                 </TouchableHighlihght>
                 <View style={[styles.pickerView]}>
-                    { if (this.state.expanded) { picker } }
+                    { this.state.expanded ? picker : null }
                 </View>
             </View>
         );
@@ -133,6 +133,7 @@ const styles = {
     textView: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        padding: 4,
     },
     titleText: {
         fontSize: 16,
