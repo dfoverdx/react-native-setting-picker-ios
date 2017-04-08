@@ -21,9 +21,9 @@ export default class SettingPickerIOS extends Component {
     }
 
     componentDidMount() {
-        let picker = this.props.children,
+        let picker = React.Children.only(this.props.children),
             val;
-        switch (getChildElementType(picker)) {
+        switch (picker.type.displayName) {
             case 'PickerIOS':
             case 'Picker':
                 val = picker.selectedValue;
@@ -66,8 +66,8 @@ export default class SettingPickerIOS extends Component {
     }
 
     render() {
-        let picker = this.props.children;
-        switch (getChildElementType(picker)) {
+        let picker = React.Children.only(this.props.children);
+        switch (picker.type.displayName) {
             case 'PickerIOS':
             case 'Picker':
                 picker.onValueChange = handleValueChange;
@@ -151,7 +151,3 @@ const styles = {
         borderColor: borderColor,
     },
 };
-
-function getChildElementType(picker) {
-    return picker.type.name;
-}
