@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableHighlihght, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation } from 'react-native';
+import { View, Text, TouchableHighlight, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation, StyleSheet } from 'react-native';
 
 export default class SettingPickerIOS extends Component {
     constructor(props) {
@@ -11,26 +11,40 @@ export default class SettingPickerIOS extends Component {
         };
 
         this.handleValueChange = this.handleValueChange.bind(this);
+        this.handleDateChange = this.handleDateChange.bind(this);
         this.handlePress = this.handlePress.bind(this);
+        this.handleShowUnderlay = this.handleShowUnderlay.bind(this);
     }
 
     componentWillMount() {
-        if (!__DEV__ && Platform.OS !== 'ios') {
+        if (Platform.OS !== 'ios') {
             throw new Error('SettingPickerIOS is only supported in iOS');
+        }
+
+        switch (this.props.children.type.name) {
+            case 'PickerIOS':
+            case 'Picker':
+            case 'DatePickerIOS':
+                break;
+
+            default:
+                throw new Error('SettingPickerIOS\'s child must be PickerIOS, Picker, or DatePickerIOS.');
         }
     }
 
     componentDidMount() {
-        let picker = this.props.children[0],
+        let picker = this.props.children,
             val;
-        switch (getChildElementType(picker)) {
-            case 'pickerIOS':
-            case 'picker':
-                val = picker.selectedValue;
+
+        switch (picker.type.name) {
+            case 'PickerIOS':
+            case 'Picker':
+                let selVal = picker.props.selectedValue;
+                val = picker.props.children.filter(c => c.props.value === selVal)[0].props.label;
                 break;
 
-            case 'datePickerIOS':
-                val = picker.date;
+            case 'DatePickerIOS':
+                val = picker.props.date;
                 break;
         }
 
@@ -41,21 +55,27 @@ export default class SettingPickerIOS extends Component {
 
     componentWillUpdate(nextProps, nextState) {
         if (this.state.expanded !== nextState.expanded) {
-            var customLayoutLinear = {
-                    duration: 75,
+            var customLayoutEase = {
+                    duration: 200,
                     update: {
-                        type: LayoutAnimation.Types.linear,
+                        type: LayoutAnimation.Types.easeInEaseOut,
                         property: LayoutAnimation.Properties.scaleXY
                     }
                 };
 
-            LayoutAnimation.configureNext(customLayoutLinear);
+            LayoutAnimation.configureNext(customLayoutEase);
         }
     }
 
-    handleValueChange(value) {
-        this.state.setState({
-            value: value,
+    handleValueChange(itemValue, itemPosition, picker) {
+        this.setState({
+            value: picker.children[itemPosition].props.label,
+        });
+    }
+
+    handleDateChange(date) {
+        this.setState({
+            value: date
         });
     }
 
@@ -65,15 +85,46 @@ export default class SettingPickerIOS extends Component {
         });
     }
 
+    handleShowUnderlay() {
+        var customLayoutEase = {
+            duration: 200,
+            update: {
+                type: LayoutAnimation.Types.easeInEaseOut,
+                property: LayoutAnimation.Properties.opacity,
+            }
+        };
+
+        LayoutAnimation.configureNext(customLayoutEase);
+    }
+
     render() {
-        let picker = this.props.children[0];
-        switch (getChildElementType(picker)) {
-            case 'pickerIOS':
-            case 'picker':
-                picker.onValueChange = handleValueChange;
+        let picker = this.props.children,
+            prevHandleChange,
+            handleValChange;
+
+        switch (picker.type.name) {
+            case 'PickerIOS':
+            case 'Picker':
+                prevHandleChange = picker.props.onValueChange;
+                let self = this;
+                handleValChange = function (v, i) {
+                    prevHandleChange(v, i); 
+
+                    // hacky workaround since I couldn't get ref to get called when setting it in cloneElement()
+                    self.handleValueChange.call(self, v, i, this);
+                };
+
+                picker = React.cloneElement(picker, {onValueChange: handleValChange});
                 break;
-            case 'datePickerIOS':
-                picker.onDateChange = handleValueChange;
+
+            case 'DatePickerIOS':
+                prevHandleChange = picker.props.onDateChange;
+                handleValChange = (d) => {
+                    prevHandleChange(d); 
+                    this.handledateChange(d);
+                };
+
+                picker = React.cloneElement(picker, {onDateChange: handleValChange});
                 break;
         }
 
@@ -82,20 +133,20 @@ export default class SettingPickerIOS extends Component {
             this.props.textStyle,
         ];
 
-        if (!this.state.expanded) {
+        if (this.state.expanded) {
             valueTextStyles.push(styles.valueTextExpanded);
         }
 
         return (
             <View style={[styles.outerView, this.props.style]}>
-                <TouchableHighlihght onPress={this.handlePress}>
+                <TouchableHighlight onPress={this.handlePress} onShowUnderlay={this.handleShowUnderlay} underlayColor={underlayColor} >
                     <View style={styles.textView}>
                         <Text style={[styles.titleText, this.props.textStyle]}>{this.props.title}</Text>
                         <Text style={valueTextStyles}>{this.state.value}</Text>
                     </View>
-                </TouchableHighlihght>
-                <View style={[styles.pickerView]}>
-                    { if (this.state.expanded) { picker } }
+                </TouchableHighlight>
+                <View}>
+                    { this.state.expanded ? picker : null }
                 </View>
             </View>
         );
@@ -103,11 +154,7 @@ export default class SettingPickerIOS extends Component {
 }
 
 SettingPickerIOS.propTypes = {
-    children: React.PropTypes.oneOfType([
-            React.PropTypes.instanceOf(Picker),
-            React.PropTypes.instanceOf(PickerIOS),
-            React.PropTypes.instanceOf(DatePickerIOS),
-        ]).isRequired,
+    children: React.PropTypes.element.isRequired,
     title: React.PropTypes.string.isRequired,
     style: React.PropTypes.oneOfType([
             React.PropTypes.instanceOf(StyleSheet),
@@ -120,47 +167,34 @@ SettingPickerIOS.propTypes = {
 };
 
 const borderColor = 'rgb(200, 199, 204)';
+const underlayColor = 'rgb(218, 218, 218)';
 
 const styles = {
     outerView: {
         flexDirection: 'column',
         justifyContent: 'flex-start',
         backgroundColor: 'white',
-        borderTopWidth: 1,
-        borderBottomWidth: 1,
-        borderColor: borderColor,
     },
     textView: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginLeft: 23,
+        paddingRight: 36,
+        paddingVertical: 15,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: borderColor,
     },
     titleText: {
-        fontSize: 16,
+        fontSize: 18,
         color: 'black',
+        flex: 1,
     },
     valueText: {
-        fontSize: 16,
+        fontSize: 18,
         color: 'black',
     },
     valueTextExpanded: {
         color: 'red'
     },
-    pickerView: {
-        borderTopWidth: 1,
-        borderColor: borderColor,
-    },
 };
-
-function getChildElementType(picker) {
-    if (picker instanceOf PickerIOS) {
-        return 'pickerIOS';
-    }
-
-    if (picker instanceOf Picker) {
-        return 'picker';
-    }
-
-    if (picker instanceOf DatePickerIOS) {
-        return 'datePickerIOS';
-    }
-}
