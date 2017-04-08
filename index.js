@@ -183,7 +183,6 @@ const styles = {
         paddingVertical: 15,
         borderTopWidth: StyleSheet.hairlineWidth,
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderColor: borderColor,
     },
     titleText: {
         fontSize: 18,
