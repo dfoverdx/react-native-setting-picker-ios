@@ -108,7 +108,7 @@ export default class SettingPickerIOS extends Component {
                 prevHandleChange = picker.props.onValueChange;
                 let self = this;
                 handleValChange = function (v, i) {
-                    prevHandleChange(v, i); 
+                    prevHandleChange(v, i);
 
                     // hacky workaround since I couldn't get ref to get called when setting it in cloneElement()
                     self.handleValueChange.call(self, v, i, this);
@@ -120,7 +120,7 @@ export default class SettingPickerIOS extends Component {
             case 'DatePickerIOS':
                 prevHandleChange = picker.props.onDateChange;
                 handleValChange = (d) => {
-                    prevHandleChange(d); 
+                    prevHandleChange(d);
                     this.handledateChange(d);
                 };
 
@@ -145,7 +145,7 @@ export default class SettingPickerIOS extends Component {
                         <Text style={valueTextStyles}>{this.state.value}</Text>
                     </View>
                 </TouchableHighlight>
-                <View}>
+                <View>
                     { this.state.expanded ? picker : null }
                 </View>
             </View>
