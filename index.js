@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableHighlight, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation,
-         StyleSheet } from 'react-native';
+import { View, Text, TouchableHighlight, Platform, Picker, PickerIOS, DatePickerIOS, LayoutAnimation, StyleSheet } from 'react-native';
 
 export default class SettingPickerIOS extends Component {
     constructor(props) {
@@ -18,16 +17,23 @@ export default class SettingPickerIOS extends Component {
     }
 
     componentWillMount() {
-        if (Platform.OS !== 'ios' && !__DEV__) {
+        if (Platform.OS !== 'ios') {
             throw new Error('SettingPickerIOS is only supported in iOS');
         }
 
-        // call to make sure child picker exists as only element
-        getChildPicker(React.Children.only(this.props.children));
+        switch (this.props.children.type.name) {
+            case 'PickerIOS':
+            case 'Picker':
+            case 'DatePickerIOS':
+                break;
+
+            default:
+                throw new Error('SettingPickerIOS\'s child must be PickerIOS, Picker, or DatePickerIOS.');
+        }
     }
 
     componentDidMount() {
-        let picker = getChildPicker(React.Children.only(this.props.children)),
+        let picker = this.props.children,
             val;
 
         switch (picker.type.name) {
@@ -102,7 +108,7 @@ export default class SettingPickerIOS extends Component {
                 prevHandleChange = picker.props.onValueChange;
                 let self = this;
                 handleValChange = function (v, i) {
-                    prevHandleChange(v, i);
+                    prevHandleChange(v, i); 
 
                     // hacky workaround since I couldn't get ref to get called when setting it in cloneElement()
                     self.handleValueChange.call(self, v, i, this);
@@ -114,7 +120,7 @@ export default class SettingPickerIOS extends Component {
             case 'DatePickerIOS':
                 prevHandleChange = picker.props.onDateChange;
                 handleValChange = (d) => {
-                    prevHandleChange(d);
+                    prevHandleChange(d); 
                     this.handledateChange(d);
                 };
 
@@ -139,7 +145,7 @@ export default class SettingPickerIOS extends Component {
                         <Text style={valueTextStyles}>{this.state.value}</Text>
                     </View>
                 </TouchableHighlight>
-                <View>
+                <View}>
                     { this.state.expanded ? picker : null }
                 </View>
             </View>
@@ -159,26 +165,6 @@ SettingPickerIOS.propTypes = {
             React.PropTypes.object,
         ]),
 };
-
-function getChildPicker(picker) {
-    function isValidPicker(p) {
-        const ValidPickerTypeNames = ['PickerIOS', 'Picker', 'DatePickerIOS'];
-        return p &&
-               ((p instanceof PickerIOS || p instanceof Picker || p instanceof DatePickerIOS) ||
-                (picker.type && picker.type.name && ValidPickerTypeNames.includes(picker.type.name)));
-    }
-
-    // enable wrapping pickers
-    while (picker && !isValidPicker(picker) && picker instanceof Component && picker.props.children.length === 1) {
-        picker = picker.props.children[0];
-    }
-
-    if (!picker) {
-        throw new Error('SettingPickerIOS\'s child must be a singleton PickerIOS, Picker, or DatePickerIOS.');
-    }
-
-    return picker;
-}
 
 const borderColor = 'rgb(200, 199, 204)';
 const underlayColor = 'rgb(218, 218, 218)';
